@@ -1,0 +1,25 @@
+select customer_level_based,
+ntile(4) OVER(ORDER BY ortalama_price) [segment],
+ortalama_price
+from
+(
+	SELECT *,
+		COUNTRY||"_"||SOURCE||"_"||SEX||"_"||age_cat [customer_level_based]
+	from
+	(
+		SELECT *,
+			CASE when AGE > 1  AND AGE <=18 THEN "0_18"
+				when AGE > 18 AND AGE <=24 THEN "18_24"
+				when AGE > 24 AND AGE <=30 THEN "24_30"
+				when AGE > 30 AND AGE <=40 THEN "30_40"
+				when AGE > 40 AND AGE <=90 THEN "40_90"
+			END [age_cat]
+		from
+			(
+			SELECT *,avg(PRICE) [ortalama_price]
+			from persona GROUP by SOURCE,SEX,COUNTRY,AGE
+			) sub1
+	)sub2
+	GROUP BY customer_level_based
+)sub3
+WHERE customer_level_based = "deu_ios_male_24_30";
